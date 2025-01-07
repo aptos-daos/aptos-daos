@@ -2,4 +2,6 @@
 .env
 .idea
 .vscode
-client/
+node_modules/
+package-lock.json
+yarn.lock
