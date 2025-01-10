@@ -8,9 +8,10 @@ datasource db {
 }
 
 model DAO {
-  id                   String @id @default(cuid())
-  founderWalletAddress String
-  bio                  String
+  id            String @id @default(cuid())
+  walletAddress String
+  title         String
+  bio           String
 
   treasuryAddress String @unique
   daoCoinAddress  String @unique
@@ -24,7 +25,7 @@ model DAO {
   createdAt DateTime @default(now())
 
   userId  String
-  founder User   @relation(fields: [founderWalletAddress], references: [walletAddress])
+  founder User   @relation(fields: [walletAddress], references: [walletAddress])
 }
 
 model User {

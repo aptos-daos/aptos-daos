@@ -3,10 +3,18 @@ import { DAODataSchema } from "../validations/dao.validation";
 import prisma from "../libs/prisma";
 
 export class DAOController {
+  /*
+  title,
+bio,
+daoCoinAddress, 
+fundingStarts
+  */
   async createDAO(req: Request, res: Response) {
     try {
-      // TODO: UPDATE USER DATA
-      const daoData = DAODataSchema.parse(req.body);
+      const daoData = DAODataSchema.parse({
+        ...req.body,
+        walletAddress: req.body.walletAddress,
+      });
       const newDAO = await prisma.dAO.create({
         data: daoData,
       });
@@ -30,49 +38,13 @@ export class DAOController {
     }
   }
 
-  async deleteDAOs(req: Request, res: Response) {
-    try {
-      if (!req.body || !req.body.ids) {
-        const deletedEntries = await prisma.dAO.deleteMany();
-        res.status(200).json({
-          message: `All DAOs deleted successfully. Total deleted: ${deletedEntries.count}`,
-        });
-        return;
-      }
-
-      const { ids } = req.body;
-
-      if (!Array.isArray(ids)) {
-        res.status(400).json({
-          error: "Invalid input: expected an array of DAO IDs",
-        });
-        return;
-      }
-
-      const deletedEntries = await prisma.dAO.deleteMany({
-        where: {
-          id: {
-            in: ids,
-          },
-        },
-      });
-
-      res.status(200).json({
-        message: `${deletedEntries.count} DAOs deleted successfully`,
-      });
-    } catch (error) {
-      res.status(500).json({ error });
-    }
-  }
-
   async updateDAO(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const daoData = DAODataSchema.innerType().innerType().partial().parse(req.body);
 
       const data = await prisma.dAO.update({
         where: { id },
-        data: daoData,
+        data: req.body,
       });
 
       res.status(200).json({ data, message: "DAO Updated Successfully" });

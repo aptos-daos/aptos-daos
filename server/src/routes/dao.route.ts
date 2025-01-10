@@ -1,28 +1,26 @@
-import { Router } from 'express';
-import { DAOController } from '../controller/dao.controller';
+import { Router } from "express";
+import { DAOController } from "../controller/dao.controller";
 import { validateResponse } from "../middlewares/validate.middleware";
+import { auth } from "../middlewares/auth.middleware";
 
 const router = Router();
 const daoController = new DAOController();
 
 router.use(validateResponse);
 
-// Create single DAO
-router.post('/daos', daoController.createDAO);
+// Create DAO
+router.post("/daos", auth, daoController.createDAO);
 
-// Delete single DAO
-router.delete('/daos/:id', daoController.removeDAO);
-
-// Delete multiple/all DAOs
-router.delete('/daos', daoController.deleteDAOs);
+// Delete DAO
+router.delete("/daos/:id", auth, daoController.removeDAO);
 
 // Update DAO
-router.put('/daos/:id', daoController.updateDAO);
+router.put("/daos/:id", auth, daoController.updateDAO);
 
 // Get all DAOs
-router.get('/daos', daoController.getAllDAOs);
+router.get("/daos", daoController.getAllDAOs);
 
 // Get single DAO
-router.get('/daos/:id', daoController.getSingleDAO);
+router.get("/daos/:id", daoController.getSingleDAO);
 
 export default router;
