@@ -2,20 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  scroll-behavior: smooth;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  main {
+    @apply h-[93vh] p-4 overflow-y-scroll md:overflow-hidden;
+  }
+  
+  h1 {
+    @apply font-semibold text-lg dark:text-white;
+  }
+
+  label {
+    @apply text-sm text-gray-800 dark:text-gray-200;
+  }
+
+  input {
+    @apply appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 sm:text-sm;
+  }
+
+  span {
+    @apply whitespace-nowrap;
+  }
+
+  p {
+    @apply font-thin;
+  }
+
+  .error {
+    @apply text-red-500 text-sm;
+  }
+
+  .modal-buttons > button, .control > button  {
+    @apply text-xs whitespace-nowrap text-white px-4 py-2 rounded-md flex items-center justify-center gap-2;
+  }
+
+  .aside {
+    @apply h-[93vh] p-4
+  }
 }
