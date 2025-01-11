@@ -16,7 +16,7 @@ const CLIENT_URL = process.env.CLIENT_URL || "*";
 // Middlewares
 app.use(
   cors({
-    origin: [CLIENT_URL],
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   })
 );

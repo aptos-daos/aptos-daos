@@ -1,22 +1,4 @@
 import { z } from "zod";
-import { addDays } from "date-fns";
-
-const DEFAULT_FUNDING_TRADING_DURATION = 0; // 0 days
-const DEFAULT_FUNDING_DURATION = 7; // 7 days
-const DEFAULT_TRADING_DURATION = 90; // 90 days
-
-export const getDefaultDates = (fundingStartDate: Date = new Date()) => {
-  const tradingStart = addDays(
-    fundingStartDate,
-    DEFAULT_FUNDING_TRADING_DURATION + DEFAULT_FUNDING_DURATION
-  );
-  return {
-    fundingStarts: fundingStartDate,
-    fundingEnds: addDays(fundingStartDate, DEFAULT_FUNDING_DURATION),
-    tradingStartsAt: tradingStart,
-    tradingEndsAt: addDays(tradingStart, DEFAULT_TRADING_DURATION),
-  };
-};
 
 const dateSchema = z
   .union([
@@ -32,39 +14,27 @@ const dateSchema = z
     return value;
   });
 
-const daoSchema = z
-  .object({
-    id: z.string().cuid(),
-    walletAddress: z.string(),
-    title: z.string().min(3).max(50, "Title max word limit is 50"),
-    bio: z
-      .string()
-      .min(1, "Bio is required")
-      .max(500, "Bio must be less than 500 characters"),
-    treasuryAddress: z.string(),
-    daoCoinAddress: z.string(),
+const daoSchema = z.object({
+  id: z.string().cuid(),
+  walletAddress: z.string(),
+  poster: z.string(),
+  title: z.string().min(3).max(50, "Title max word limit is 50"),
+  bio: z
+    .string()
+    .min(1, "Bio is required")
+    .max(500, "Bio must be less than 500 characters"),
+  treasuryAddress: z.string(),
+  daoCoinAddress: z.string(),
 
-    fundingStarts: dateSchema.optional().default(new Date()),
-    fundingEnds: dateSchema.optional(),
+  fundingStarts: dateSchema.optional().default(new Date()),
+  fundingEnds: dateSchema.optional(),
 
-    tradingStartsAt: dateSchema.optional(),
-    tradingEndsAt: dateSchema.optional(),
+  tradingStartsAt: dateSchema.optional(),
+  tradingEndsAt: dateSchema.optional(),
 
-    createdAt: z.date().default(() => new Date()),
-    userId: z.string().cuid(),
-  })
-  .transform((data) => ({
-    ...data,
-    ...getDefaultDates(data.fundingStarts),
-  }))
-  .refine((data) => data.fundingStarts < data.fundingEnds, {
-    message: "Funding end date must be after funding start date",
-    path: ["fundingEnds"],
-  })
-  .refine((data) => data.tradingStartsAt < data.tradingEndsAt, {
-    message: "Trading end date must be after trading start date",
-    path: ["tradingEndsAt"],
-  });
+  createdAt: z.date().default(() => new Date()),
+  userId: z.string().cuid(),
+});
 
 export type DaoData = z.infer<typeof daoSchema>;
 
