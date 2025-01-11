@@ -1,3 +1,4 @@
+import PreviewDisplay from "@/components/modules/preview-display";
 import DAOAPI from "@/request/dao/dao.api";
 import { notFound } from "next/navigation";
 
@@ -15,5 +16,11 @@ export default async function Page({
     return notFound();
   }
 
-  return <main>Fund Name: {String(dao)} {fundId}</main>;
+  // TODO: Implement Portfolio Number and Percentage
+
+  return (
+    <main>
+      <PreviewDisplay portfolioPercentage={43} portfolioSize={1200} {...dao} />
+    </main>
+  );
 }
