@@ -40,7 +40,6 @@ import {
   MoreWalletsViewProps,
   WalletRowItemProps,
 } from "./wallet.d";
-// import UserAPI from "@/service/user/user.api";
 import { useToast } from "@/hooks/use-toast";
 import UserAPI from "@/request/auth/user.api";
 
@@ -158,7 +157,7 @@ function ConnectWalletDialog({
 
   // Utility function to filter wallets
   const filteredWallets = wallets.filter((wallet) =>
-    ["Petra", "Continue with Google"].includes(wallet.name)
+    ["Petra", "Martian","Continue with Google"].includes(wallet.name)
   );
 
   const { aptosConnectWallets, availableWallets, installableWallets } =
@@ -210,7 +209,7 @@ function MainWalletView({
           <WalletLogo />
         </div> */}
         <DialogTitle className="flex flex-col text-center leading-snug font-semibold mt-4">
-          Connect to Wgmi
+          Connect to DAOs
         </DialogTitle>
       </DialogHeader>
 

@@ -27,7 +27,7 @@ const useDao = () => {
   const { toast } = useToast();
 
   const responseParserData = <T>(
-    data: Response<T>,
+    data: IResponse<T>,
     onSuccessToast: boolean = false
   ): T => {
     if (onSuccessToast || !data.success)
@@ -40,7 +40,7 @@ const useDao = () => {
 
   const fetchAllDaoData = async (): Promise<DaoData[]> => {
     try {
-      const response = await instance.get<Response<DaoData[]>>("/dao");
+      const response = await instance.get<IResponse<DaoData[]>>("/dao");
       return responseParserData(response.data);
     } catch (error) {
       toast({
@@ -53,7 +53,7 @@ const useDao = () => {
 
   const fetchDao = async (id: string): Promise<DaoData | null> => {
     try {
-      const response = await instance.get<Response<DaoData>>(`/dao/${id}`);
+      const response = await instance.get<IResponse<DaoData>>(`/dao/${id}`);
       return responseParserData<DaoData>(response.data);
     } catch (error) {
       toast({
@@ -66,7 +66,7 @@ const useDao = () => {
 
   const addDao = async (data: DaoData): Promise<DaoData | null> => {
     try {
-      const response = await instance.post<Response<DaoData>>(
+      const response = await instance.post<IResponse<DaoData>>(
         "/dao",
         data
       );
@@ -94,7 +94,7 @@ const useDao = () => {
 
   const updateDaoValue = async (id: string, value: number) => {
     try {
-      const response = await instance.patch<Response<DaoData>>(
+      const response = await instance.patch<IResponse<DaoData>>(
         `/dao/${id}`,
         { value }
       );
