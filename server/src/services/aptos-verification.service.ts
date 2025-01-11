@@ -5,61 +5,92 @@ import {
   Ed25519PublicKey,
   Ed25519Signature,
 } from "@aptos-labs/ts-sdk";
-import { AptosAccount, AptosClient } from "aptos";
+import { AptosAccount } from "aptos";
+
+const NETWORK = "testnet";
+const API_VERSION = "1";
+const URI = "https://arupbasak.xyz/";
+const RESOURCES = ["https://docs.moralis.io/"];
+
+const getHex = (str: string): string =>
+  str.startsWith("0x") ? str : `0x${str}`;
+const generateNonce = (): string => randomBytes(16).toString("base64");
 
 export const aptos = new Aptos();
 
-export const client = new AptosClient(
-  "https://fullnode.testnet.aptoslabs.com/v1"
-);
+const initializeAdminAccount = (): AptosAccount => {
+  const privateKeyStr = process.env.ADMIN_PRIVATE_KEY;
+  if (!privateKeyStr) {
+    throw new Error("Admin private key not found in environment variables");
+  }
 
-const privateKey = new Ed25519PrivateKey(
-  process.env.ADMIN_PRIVATE_KEY as string
-);
-export const ADMIN_ACCOUNT = new AptosAccount(privateKey.toUint8Array());
-//Switch between testnet and mainnet
-export const GRAPHQL_ENDPOINT = "https://api.testnet.aptoslabs.com/v1/graphql";
+  const privateKey = new Ed25519PrivateKey(privateKeyStr);
+  return new AptosAccount(privateKey.toUint8Array());
+};
+
+export const ADMIN_ACCOUNT = initializeAdminAccount();
+
 export class AptosVerificationService {
-  requestMessage(address: string): any {
+  private static createMessage(
+    address: string,
+    nonce: string,
+    issuedAt: string
+  ): string {
+    return `wgmi.launchpad wants you to sign in with your Aptos account:
+    ${address}
+    Please confirm
+    URI: ${URI}
+    Version: ${API_VERSION}
+    Network: ${NETWORK}
+    Nonce: ${nonce}
+    Issued At: ${issuedAt}
+    Resources: ${JSON.stringify(RESOURCES)}`;
+  }
+
+  public requestMessage(address: string): { message: string; nonce: string } {
     try {
-      const nonce = randomBytes(16).toString("base64");
+      if (!address) {
+        throw new Error("Address is required");
+      }
+
+      const nonce = generateNonce();
       const issuedAt = new Date().toISOString();
-      const message = `wgmi.launchpad wants you to sign in with your Aptos account:
-${address}
-
-Please confirm
-
-URI: https://wgmi.launchpad/
-Version: 1
-Network: testnet
-Nonce: ${nonce}
-Issued At: ${issuedAt}
-Resources: ["https://docs.moralis.io/"]`;
+      const message = AptosVerificationService.createMessage(
+        address,
+        nonce,
+        issuedAt
+      );
 
       return { message, nonce };
     } catch (error) {
-      console.error(error);
-      return { message: "", nonce: "" };
+      console.error("Error in requestMessage:", error);
+      throw error; // Better to throw than return empty strings
     }
   }
-  async verifyMessage(
-    account: any,
+
+  public verifySignature(
     message: string,
-    signature: string
-  ): Promise<string> {
+    signature: string,
+    publicKey: string
+  ): boolean {
     try {
-      const pubKey = new Ed25519PublicKey(account.publicKey);
-      const signatureObj = new Ed25519Signature(signature);
+      if (!message || !signature || !publicKey) {
+        throw new Error("Message, signature, and public key are required");
+      }
+
+      const ed25519PublicKey = new Ed25519PublicKey(
+        ADMIN_ACCOUNT.pubKey().toShortString()
+      );
+      const ed25519Signature = new Ed25519Signature(getHex(signature));
       const encodedMessage = new TextEncoder().encode(message);
 
-      const verified = pubKey.verifySignature({
+      return ed25519PublicKey.verifySignature({
         message: encodedMessage,
-        signature: signatureObj,
+        signature: ed25519Signature,
       });
-      return verified ? account.address : "";
     } catch (error) {
-      console.error(error);
-      return "";
+      console.error("Error in verifySignature:", error);
+      return false;
     }
   }
 }

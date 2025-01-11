@@ -3,7 +3,6 @@ import RootLayoutProvider from "@/provider/RootLayoutProvider";
 import { Jost as FontSans } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/provider/WalletProvider";
-import { WalletSelector } from "@/components/WalletSelector";
 
 const mFont = FontSans({ subsets: ["latin"], weight: ["400", "600", "700"] });
 

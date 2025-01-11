@@ -28,6 +28,7 @@ app.use(morgan("dev"));
 // Routes
 app.use("/api/v1/dao", daoRoute);
 app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/invite", authRoute);
 
 app.get("/healthcheck", (_: Request, res: Response) => {
   const now = new Date();

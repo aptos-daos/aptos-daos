@@ -37,7 +37,7 @@ const daoSchema = z
     id: z.string().cuid(),
     walletAddress: z.string(),
     title: z.string().min(3).max(50, "Title max word limit is 50"),
-    bio: z
+    description: z
       .string()
       .min(1, "Bio is required")
       .max(500, "Bio must be less than 500 characters"),

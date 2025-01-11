@@ -5,7 +5,7 @@ import prisma from "../libs/prisma";
 export class DAOController {
   /*
   title,
-bio,
+description,
 daoCoinAddress, 
 fundingStarts
   */

@@ -8,7 +8,7 @@ import {
 import { DaoData } from "@/validation/dao.validation";
 import Image from "next/image";
 
-export function DaoCard({ title, bio, poster }: DaoData) {
+export function DaoCard({ title, description, poster }: DaoData) {
   return (
     <Card className="w-full">
       <CardHeader>
@@ -20,7 +20,7 @@ export function DaoCard({ title, bio, poster }: DaoData) {
           width={100}
         />
         <CardTitle className="mt-4">{title}</CardTitle>
-        <CardDescription>{bio}</CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
     </Card>
   );

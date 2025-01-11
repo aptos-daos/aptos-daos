@@ -18,20 +18,26 @@ export class AuthController {
     const { account, message, signature } = req.body;
 
     if (!account || !message || !signature) {
-      return res.status(400).json({
+      res.status(400).json({
         message: "Account, Message and Signature are required to login.",
       });
+      return;
     }
 
-    const walletAddress = await this.aptosVerificationService.verifyMessage(
-      account,
+    const resp  = await this.aptosVerificationService.verifySignature(
       message,
-      signature
+      signature,
+      account,
     );
+    console.log(resp)
+    return;
+    const walletAddress = ""
     if (walletAddress === "") {
-      return res.status(400).json({
+      res.status(400).json({
+        status: false,
         message: "Message verification failed.",
       });
+      return;
     }
 
     let user = await prisma.user.create({
@@ -54,16 +60,18 @@ export class AuthController {
   requestMessage(req: Request, res: Response) {
     const { walletAddress } = req.body;
     if (!walletAddress) {
-      return res.status(400).json({
+      res.status(400).json({
         message: "Wallet address not found",
       });
+      return;
     }
 
     const message = this.aptosVerificationService.requestMessage(walletAddress);
     if (message.message === "") {
-      return res.status(400).json({
+      res.status(400).json({
         message: "Message generation failed.",
       });
+      return;
     }
     res.status(200).json({
       message: "success",
@@ -71,4 +79,3 @@ export class AuthController {
     });
   }
 }
-

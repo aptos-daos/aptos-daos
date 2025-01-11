@@ -36,7 +36,7 @@ export default class UserAPI extends APIRequest {
     this.walletAddress = walletAddress;
 
     const config = {
-      url: "/user/request-message",
+      url: "/auth/request-message",
       method: "POST",
       data: { walletAddress: this.walletAddress },
     };
@@ -73,7 +73,7 @@ export default class UserAPI extends APIRequest {
     }
 
     const config = {
-      url: "/user",
+      url: "/auth",
       method: "POST",
       data: { account, message, signature },
     };

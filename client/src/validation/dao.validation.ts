@@ -14,15 +14,41 @@ const dateSchema = z
     return value;
   });
 
-const daoSchema = z.object({
-  id: z.string().cuid(),
-  walletAddress: z.string(),
-  poster: z.string(),
-  title: z.string().min(3).max(50, "Title max word limit is 50"),
-  bio: z
+export const daoFormSchema = z.object({
+  title: z
     .string()
-    .min(1, "Bio is required")
-    .max(500, "Bio must be less than 500 characters"),
+    .min(2, "Fund name must be at least 2 characters")
+    .max(50, "Fund name must be less than 50 characters"),
+  fundTicker: z
+    .string()
+    .regex(
+      /^[A-Z0-9]+$/,
+      "Fund ticker must contain only uppercase letters and numbers"
+    ),
+  description: z
+    .string()
+    .min(10, "Fund description must be at least 10 characters")
+    .max(500, "Fund description must be less than 500 characters"),
+  twitterHandle: z
+    .string()
+    .regex(/^@?(\w){1,15}$/, "Invalid Twitter/X handle format")
+    .or(z.literal("")),
+  telegramHandle: z
+    .string()
+    .regex(/^@?(\w){5,32}$/, "Invalid Telegram handle format")
+    .or(z.literal("")),
+  telegramGroup: z
+    .string()
+    .regex(/^@?(\w){5,32}$/, "Invalid Telegram group format")
+    .optional()
+    .or(z.literal("")),
+  pocDefi: z.string().min(1, "POC is required"),
+});
+
+const daoSchema = daoFormSchema.extend({
+  id: z.string().cuid(),
+  poster: z.string(),
+
   treasuryAddress: z.string(),
   daoCoinAddress: z.string(),
 
@@ -33,7 +59,6 @@ const daoSchema = z.object({
   tradingEndsAt: dateSchema.optional(),
 
   createdAt: z.date().default(() => new Date()),
-  userId: z.string().cuid(),
 });
 
 export type DaoData = z.infer<typeof daoSchema>;
