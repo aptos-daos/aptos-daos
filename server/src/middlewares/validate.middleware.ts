@@ -39,7 +39,7 @@ export const validateResponse = (
         // console.log(error);
         return res.status(500).json({
           success: false,
-          message: "An unexpected error occurred",
+          message: error || "An unexpected error occurred",
         });
       }
 

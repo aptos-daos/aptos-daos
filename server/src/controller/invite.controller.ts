@@ -3,6 +3,7 @@ import prisma from "../libs/prisma";
 import { Role } from "@prisma/client";
 import { addDays } from "date-fns";
 import { generateInviteCode } from "../utils/invite-code";
+import { error } from "console";
 
 const DEFAULT_EXPIRY_DAYS = 90;
 
@@ -105,14 +106,14 @@ export class InviteController {
 
       if (!invite) {
         res.status(404).json({
-          message: "Invalid invite code",
+          error: "Invalid invite code",
         });
         return;
       }
 
       if (invite.expiresAt < new Date()) {
         res.status(400).json({
-          message: "Invite code has expired",
+          error: "Invite code has expired",
         });
         return;
       }

@@ -42,7 +42,7 @@ export const daoFormSchema = z.object({
     .regex(/^@?(\w){5,32}$/, "Invalid Telegram group format")
     .optional()
     .or(z.literal("")),
-  pocDefi: z.string().min(1, "POC is required"),
+  poc: z.string().min(1, "POC is required"),
 });
 
 const daoSchema = daoFormSchema.extend({

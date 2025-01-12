@@ -176,6 +176,7 @@ function ConnectWalletDialog({
         <Button className="rounded-lg w-full">Connect a Wallet</Button>
       </DialogTrigger>
       <DialogContent className="max-h-screen overflow-auto w-[360px] p-6">
+        <DialogTitle hidden></DialogTitle>
         {!moreView ? (
           <MainWalletView
             hasAptosConnectWallets={hasAptosConnectWallets}

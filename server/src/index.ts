@@ -7,6 +7,7 @@ import "dotenv/config";
 
 import daoRoute from "./routes/dao.route";
 import authRoute from "./routes/auth.route";
+import inviteRoute from "./routes/invite.route";
 
 const app: Express = express();
 const port = process.env.SERVER_PORT || 8080;
@@ -28,7 +29,7 @@ app.use(morgan("dev"));
 // Routes
 app.use("/api/v1/dao", daoRoute);
 app.use("/api/v1/auth", authRoute);
-app.use("/api/v1/invite", authRoute);
+app.use("/api/v1/invite", inviteRoute);
 
 app.get("/healthcheck", (_: Request, res: Response) => {
   const now = new Date();

@@ -16,7 +16,7 @@ model DAO {
   twitterHandle  String?
   telegramHandle String?
   telegramGroup  String?
-  pocDefi        String?
+  poc        String?
   poster         String?
 
   treasuryAddress String @unique

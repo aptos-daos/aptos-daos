@@ -14,4 +14,15 @@ const formatPercentage = (value: number): string => {
   return `${value >= 0 ? "+" : ""}${value}%`;
 };
 
-export { formatNumber, formatCurrency, formatPercentage };
+const formatDate = (date: Date) => {
+  return date.toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+};
+
+export { formatNumber, formatCurrency, formatPercentage, formatDate };

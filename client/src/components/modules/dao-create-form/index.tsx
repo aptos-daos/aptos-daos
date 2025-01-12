@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { z } from "zod";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 import { daoFormSchema } from "@/validation/dao.validation";
+import Form from 'next/form';
 
 type FormValues = z.infer<typeof daoFormSchema>;
 
@@ -32,7 +33,7 @@ const DaoInitForm: React.FC = () => {
       twitterHandle: "",
       telegramHandle: "",
       telegramGroup: "",
-      pocDefi: "",
+      poc: "",
     },
     validationSchema: toFormikValidationSchema(daoFormSchema),
     onSubmit: handleSubmit,
@@ -71,7 +72,7 @@ const DaoInitForm: React.FC = () => {
         Create Your Hedge Fund DAO
       </h2>
 
-      <form onSubmit={formik.handleSubmit} className="space-y-4">
+      <Form action="" onSubmit={formik.handleSubmit} className="space-y-4">
         {renderField("title", "Fund Name", "Enter your fund's name")}
         {renderField("fundTicker", "Fund Ticker", "e.g., BTC, ETH")}
         {renderField(
@@ -87,7 +88,7 @@ const DaoInitForm: React.FC = () => {
           "@groupname (optional)"
         )}
         {renderField(
-          "pocDefi",
+          "poc",
           "Point of Contact at DeFi",
           "Enter the name of your DeFi contact"
         )}
@@ -99,7 +100,7 @@ const DaoInitForm: React.FC = () => {
         >
           {formik.isSubmitting ? "Submitting..." : "Submit"}
         </Button>
-      </form>
+      </Form>
     </div>
   );
 };
