@@ -21,7 +21,8 @@ export const validateResponse = (
       if (error) {
         // Zod Error Handler
         if (error instanceof ZodError) {
-          return res.status(400).json(zodErrorHandler(error));
+          const response = zodErrorHandler(error);
+          return originalJson.call(this, response);
         }
 
         // Prisma Error Handler
@@ -30,14 +31,16 @@ export const validateResponse = (
           error instanceof PrismaClientValidationError
         ) {
           const prismaError = handlePrismaError(error);
-          return res.status(prismaError.status).json({
+          res.status(prismaError.status);
+          return originalJson.call(this, {
             success: false,
             message: prismaError.message,
           });
         }
 
         // console.log(error);
-        return res.status(500).json({
+        res.status(500);
+        return originalJson.call(this, {
           success: false,
           message: error || "An unexpected error occurred",
         });
@@ -46,7 +49,9 @@ export const validateResponse = (
       const validatedData = respVal.parse(data);
       return originalJson.call(this, validatedData);
     } catch (error) {
-      return res.status(500).json({
+      console.error(error);
+      res.status(500);
+      return originalJson.call(this, {
         success: false,
         message: "Response validation failed",
       });

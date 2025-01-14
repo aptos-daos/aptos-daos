@@ -5,19 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { z } from "zod";
 import { toFormikValidationSchema } from "zod-formik-adapter";
-import { daoFormSchema } from "@/validation/dao.validation";
-import Form from 'next/form';
+import { daoWithInvite } from "@/validation/dao.validation";
+import Form from "next/form";
+import { useDao } from "@/hooks/use-dao";
 
-type FormValues = z.infer<typeof daoFormSchema>;
+type FormValues = z.infer<typeof daoWithInvite>;
 
-const DaoInitForm: React.FC = () => {
+interface Props {
+  inviteCode?: string;
+}
+
+const DaoInitForm: React.FC<Props> = ({ inviteCode = "" }) => {
+  const { createDao } = useDao();
   const handleSubmit = async (
     values: FormValues,
     { setSubmitting }: FormikHelpers<FormValues>
   ) => {
     try {
-      console.log("Form submitted:", values);
-      // Handle form submission here
+      const resp = await createDao(values);
+      console.log(resp);
     } catch (error) {
       console.error("Submission error:", error);
     } finally {
@@ -34,8 +40,9 @@ const DaoInitForm: React.FC = () => {
       telegramHandle: "",
       telegramGroup: "",
       poc: "",
+      inviteCode,
     },
-    validationSchema: toFormikValidationSchema(daoFormSchema),
+    validationSchema: toFormikValidationSchema(daoWithInvite),
     onSubmit: handleSubmit,
   });
 
@@ -43,10 +50,14 @@ const DaoInitForm: React.FC = () => {
     name: keyof FormValues,
     label: string,
     placeholder: string = "",
-    type: string = "text"
+    type: string = "text",
+    required: boolean = true
   ) => (
     <div className="space-y-2">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={name}>
+        {label}
+        {required && <span className="text-red-500">*</span>}
+      </Label>
       <Input
         id={name}
         name={name}
@@ -85,12 +96,19 @@ const DaoInitForm: React.FC = () => {
         {renderField(
           "telegramGroup",
           "Telegram Group",
-          "@groupname (optional)"
+          "@groupname (optional)",
+          "text",
+          false
         )}
         {renderField(
           "poc",
           "Point of Contact at DeFi",
           "Enter the name of your DeFi contact"
+        )}
+        {renderField(
+          "inviteCode",
+          "Invite Code",
+          "Enter the invite code you received"
         )}
 
         <Button

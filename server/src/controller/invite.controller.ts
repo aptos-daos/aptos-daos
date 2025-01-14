@@ -1,131 +1,94 @@
 import { Request, Response } from "express";
+import { InviteService } from "../services/invite.service";
 import prisma from "../libs/prisma";
-import { Role } from "@prisma/client";
 import { addDays } from "date-fns";
-import { generateInviteCode } from "../utils/invite-code";
-import { error } from "console";
 
-const DEFAULT_EXPIRY_DAYS = 90;
+const DEFAULT_EXPIRY_DAYS = 7;
 
 export class InviteController {
-  constructor() {}
+  private inviteService: InviteService;
+  constructor() {
+    this.inviteService = new InviteService();
 
-  async createInvite(req: Request, res: Response): Promise<void> {
+    this.listInvite = this.listInvite.bind(this);
+    this.removeInvite = this.removeInvite.bind(this);
+    this.validateInvite = this.validateInvite.bind(this);
+    this.createInvite = this.createInvite.bind(this);
+    this.insertInviteCode = this.insertInviteCode.bind(this);
+  }
+
+  async listInvite(req: Request, res: Response) {
     try {
-      // TODO: Implement User ID and Wallet Address
-      const userId = req.user?.id;
-
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-
-      if (user?.role !== Role.ADMIN) {
-        res.status(403).json({
-          error: "Only admins can create invite codes",
-        });
-        return;
-      }
-
-      // Create invite code
-      const invite = await prisma.inviteCode.create({
-        data: {
-          code: generateInviteCode(),
-          expiresAt: addDays(new Date(), DEFAULT_EXPIRY_DAYS),
-          userId,
-        },
-      });
-
-      res.status(201).json({
-        message: "Invite created successfully",
-        data: invite,
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        message: error,
-      });
+      const invites = await prisma.inviteCode.findMany();
+      res.status(200).json(invites);
+    } catch (error) {
+      console.error("Error listing invites:", error);
+      res.status(500).json({ error: "Failed to list invites" });
     }
   }
 
-  async getInvite(req: Request, res: Response): Promise<void> {
+  async removeInvite(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const deletedInvite = await prisma.inviteCode.delete({
+        where: {
+          id: String(id),
+        },
+      });
+      res.status(200).json(deletedInvite);
+    } catch (error) {
+      console.error("Error removing invite:", error);
+      res.status(500).json({ error: "Failed to remove invite" });
+    }
+  }
+
+  async validateInvite(req: Request, res: Response) {
     try {
       const { code } = req.params;
-
-      const invite = await prisma.inviteCode.findUnique({
-        where: { code },
-        include: {
-          user: {
-            select: {
-              id: true,
-              walletAddress: true,
-            },
-          },
-        },
-      });
-
-      if (!invite) {
-        res.status(404).json({
-          message: "Invite not found",
-        });
-        return;
+      const response = await this.inviteService.validateInvite(code);
+      if (!response) {
+        res.status(400).json({ error: "Failed to validate invite" });
       }
-
-      // Check if invite has expired
-      if (invite.expiresAt < new Date()) {
-        res.status(400).json({
-          message: "Invite has expired",
-        });
-        return;
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "Invite details retrieved successfully",
-        data: invite,
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        error: error.message,
-      });
+      res.status(200).json({ message: "Token is Verified" });
+    } catch (error) {
+      res.status(500).json({ error });
     }
   }
 
-  async validateInvite(req: Request, res: Response): Promise<void> {
+  async createInvite(req: Request, res: Response) {
     try {
+      const { userId } = req.body;
+      const invite = await this.inviteService.createInvite(userId);
+      res.status(200).json(invite);
+    } catch (error) {
+      console.error("Error creating invite:", error);
+      res.status(500).json({ error: "Failed to create invite" });
+    }
+  }
+
+  async insertInviteCode(req: Request, res: Response) {
+    try {
+      if (!req.body) {
+        res
+          .status(400)
+          .json({ success: false, error: "Request body is missing" });
+        return;
+      }
       const { code } = req.body;
-
       if (!code) {
-        res.status(400).json({
-          error: "Invite code is required",
-        });
+        res.status(400).json({ success: false, error: "Invite Code Required" });
         return;
       }
-
-      const invite = await prisma.inviteCode.findUnique({
-        where: { code },
+      const invite = await prisma.inviteCode.create({
+        data: {
+          code,
+          expiresAt: addDays(new Date(), DEFAULT_EXPIRY_DAYS),
+        },
       });
-
-      if (!invite) {
-        res.status(404).json({
-          error: "Invalid invite code",
-        });
-        return;
-      }
-
-      if (invite.expiresAt < new Date()) {
-        res.status(400).json({
-          error: "Invite code has expired",
-        });
-        return;
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "Invite code is valid",
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        error: error.message,
-      });
+      res.status(201).json({ data: invite.code });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, error });
     }
   }
 }

@@ -3,6 +3,7 @@ import RootLayoutProvider from "@/provider/RootLayoutProvider";
 import { Jost as FontSans } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/provider/WalletProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 const mFont = FontSans({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
         <WalletProvider>
           <RootLayoutProvider>
             {children}
+            <Toaster />
           </RootLayoutProvider>
         </WalletProvider>
       </body>

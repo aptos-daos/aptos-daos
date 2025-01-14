@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowUpDown } from "lucide-react";
 import SwapInput from "../SwapInput";
 import { useTokenStore } from "@/store/token";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { fetchBalance } from "@/components/WalletSelector/wallet";
 
 interface SwapProps {
   onSwap?: (fromAmount: number, toAmount: number) => void;
@@ -12,10 +14,31 @@ interface SwapProps {
 }
 
 const CoinWidget = ({ onSwap, loading = false }: SwapProps) => {
-  const { tokenList } = useTokenStore();
+  const {account}  = useWallet();
+  const { tokenList, balance, setBalance } = useTokenStore();
   const [activeToken, setActiveToken] = useState<Token>(tokenList[0]);
   const [activeAmount, setActiveAmount] = useState<number>();
   const predefinedAmounts = ["0.5", "1", "2", "5"];
+  
+
+  // TODO: Fetch balance
+  // useEffect(() => {
+  //   const loadBalance = async () => {
+  //     if (account?.address && activeToken.tokenAddress) {
+  //       try {
+  //         const newBalance = await fetchBalance(account.address, activeToken.tokenAddress);
+  //         setBalance(prev => ({
+  //           ...prev,
+  //           [activeToken.tokenAddress]: newBalance
+  //         }));
+  //       } catch (error) {
+  //         console.error('Error fetching balance:', error);
+  //       }
+  //     }
+  //   };
+
+  //   loadBalance();
+  // }, [account?.address, activeToken.tokenAddress]);
 
   function handleChange(value: number) {
     setActiveAmount(value);

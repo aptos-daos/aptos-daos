@@ -1,6 +1,5 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useState } from "react";
-
 import { APIError } from "./APIRequest";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,7 +23,7 @@ export const useRequest = () => {
       });
       return;
     }
-
+    
     try {
       setLoading(true);
       const result: T = await requestFn();

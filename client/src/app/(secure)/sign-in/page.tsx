@@ -23,12 +23,11 @@ const FundCreationCard = () => {
     setLoading(true);
     try {
       const response = await inviteAPI.validateInvite(inviteCode);
-      if (response.success) {
+      if (response) {
         
       } else {
       }
     } catch (error) {
-      console.error("Failed to validate invite:", error);
     } finally {
       setLoading(false);
     }

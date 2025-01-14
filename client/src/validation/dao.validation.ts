@@ -61,6 +61,11 @@ const daoSchema = daoFormSchema.extend({
   createdAt: z.date().default(() => new Date()),
 });
 
+export const daoWithInvite = daoFormSchema.extend({
+  inviteCode: z.string().min(6, "Invite code must be at least 6 characters"),
+});
+
 export type DaoData = z.infer<typeof daoSchema>;
+export type DaoDataWithInvite = z.infer<typeof daoWithInvite>;
 
 export const DAODataSchema = daoSchema;

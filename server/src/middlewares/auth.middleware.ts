@@ -1,11 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-
-// TODO: Define the JwtPayload interface
-interface JwtPayload {
-  id: string;
-  email: string;
-}
+import { JwtPayload, JwtService } from "../services/jwt.service";
 
 declare global {
   namespace Express {
@@ -14,6 +8,8 @@ declare global {
     }
   }
 }
+
+const jwtService = new JwtService();
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -27,12 +23,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as JwtPayload;
-
-    req.user = decoded;
+    req.user = jwtService.verify(token);
     next();
   } catch (error) {
     console.error(error);
@@ -43,3 +34,26 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+export const adminAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) =>
+  auth(req, res, async () => {
+    try {
+      if (req.user?.role !== "ADMIN") {
+        res.status(403).json({
+          success: false,
+          message: "Admin access required",
+        });
+        return;
+      }
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(403).json({
+        success: false,
+        message: "Admin authentication failed",
+      });
+    }
+  });

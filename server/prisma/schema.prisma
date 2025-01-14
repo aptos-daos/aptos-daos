@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "cockroachdb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -16,11 +16,11 @@ model DAO {
   twitterHandle  String?
   telegramHandle String?
   telegramGroup  String?
-  poc        String?
+  poc            String?
   poster         String?
 
-  treasuryAddress String @unique
-  daoCoinAddress  String @unique
+  treasuryAddress String? @unique
+  daoCoinAddress  String? @unique
 
   fundingStarts DateTime?
   fundingEnds   DateTime?
@@ -30,7 +30,6 @@ model DAO {
 
   createdAt DateTime @default(now())
 
-  userId  String
   founder User   @relation(fields: [walletAddress], references: [walletAddress])
 }
 
@@ -47,7 +46,7 @@ model User {
 model InviteCode {
   id        String   @id @default(cuid())
   code      String   @unique
-  userId    String?
+  userId    String?  @unique // IF USER IS NULL, THEN IT IS NOT USED
   expiresAt DateTime
   user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import _ from "lodash";
 import CoinListCard from "./CoinListCard";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -9,41 +10,107 @@ interface Props {
   onClose: () => void;
 }
 
+// Cache interface
+interface SearchCache {
+  [key: string]: Token[];
+}
+
 const CoinList = ({ onClose }: Props) => {
   const { tokenList, setActiveToken } = useTokenStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredTokens, setFilteredTokens] = useState<Token[]>(tokenList);
+  const [searchCache, setSearchCache] = useState<SearchCache>({});
 
+  // Memoize the search function to prevent recreation on every render
+  const searchTokens = useMemo(
+    () =>
+      _.debounce((query: string, tokens: Token[]) => {
+        if (query === "") {
+          setFilteredTokens(tokens);
+          return;
+        }
+
+        // Check if we have cached results for this query
+        if (searchCache[query]) {
+          setFilteredTokens(searchCache[query]);
+          return;
+        }
+
+        const searchLower = query.toLowerCase();
+        const filtered = tokens.filter(
+          (token) =>
+            token.name.toLowerCase().includes(searchLower) ||
+            token.symbol.toLowerCase().includes(searchLower)
+        );
+
+        // Cache the results
+        setSearchCache((prevCache) => ({
+          ...prevCache,
+          [query]: filtered,
+        }));
+
+        setFilteredTokens(filtered);
+      }, 300),
+    [searchCache]
+  );
+
+  // Clear cache when token list changes
   useEffect(() => {
+    setSearchCache({});
     setFilteredTokens(tokenList);
   }, [tokenList]);
 
+  // Handle search query changes
   useEffect(() => {
-    if (searchQuery === "" || tokenList.length === 0) {
-      return;
-    }
-    const filtered = tokenList.filter((token) => {
-      const searchLower = searchQuery.toLowerCase();
-      return (
-        token.name.toLowerCase().includes(searchLower) ||
-        token.symbol.toLowerCase().includes(searchLower)
-      );
-    });
-    setFilteredTokens(filtered);
-  }, [searchQuery, tokenList]);
+    searchTokens(searchQuery, tokenList);
+    
+    // Cleanup function for debounce
+    return () => {
+      searchTokens.cancel();
+    };
+  }, [searchQuery, tokenList, searchTokens]);
 
-  const renderSkeletons = () => (
-    <>
-      {[...Array(5)].map((_, index) => (
-        <div key={index} className="flex items-center space-x-4 p-4">
-          <Skeleton className="h-12 w-12 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-[200px]" />
-            <Skeleton className="h-4 w-[100px]" />
+  // Memoize the skeleton renderer
+  const renderSkeletons = useCallback(
+    () => (
+      <>
+        {[...Array(5)].map((_, index) => (
+          <div key={index} className="flex items-center space-x-4 p-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[200px]" />
+              <Skeleton className="h-4 w-[100px]" />
+            </div>
           </div>
-        </div>
-      ))}
-    </>
+        ))}
+      </>
+    ),
+    []
+  );
+
+  // Memoize token list rendering for better performance
+  const renderedTokenList = useMemo(
+    () => (
+      <>
+        {filteredTokens.map((token, index) => (
+          <CoinListCard
+            key={`${token.symbol}-${index}`}
+            token={token}
+            className="hover:bg-gray-50 transition-colors cursor-pointer"
+            onClick={() => {
+              setActiveToken(tokenList[index]);
+              onClose();
+            }}
+          />
+        ))}
+        {filteredTokens.length === 0 && searchQuery && (
+          <div className="text-center py-4 text-zinc-500">
+            {`No tokens found matching "{${searchQuery}}"`}
+          </div>
+        )}
+      </>
+    ),
+    [filteredTokens, searchQuery, tokenList, setActiveToken, onClose]
   );
 
   return (
@@ -60,28 +127,7 @@ const CoinList = ({ onClose }: Props) => {
       </div>
 
       <div className="h-96 overflow-y-auto space-y-2">
-        {tokenList.length === 0 ? (
-          renderSkeletons()
-        ) : (
-          <>
-            {filteredTokens.map((token, index) => (
-              <CoinListCard
-                key={index}
-                token={token}
-                className="hover:bg-gray-50 transition-colors cursor-pointer"
-                onClick={() => {
-                  setActiveToken(tokenList[index]);
-                  onClose();
-                }}
-              />
-            ))}
-            {filteredTokens.length === 0 && searchQuery && (
-              <div className="text-center py-4 text-zinc-500">
-                {`No tokens found matching "{${searchQuery}}"`}
-              </div>
-            )}
-          </>
-        )}
+        {tokenList.length === 0 ? renderSkeletons() : renderedTokenList}
       </div>
     </div>
   );

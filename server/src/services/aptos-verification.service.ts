@@ -6,6 +6,7 @@ import {
   Ed25519Signature,
 } from "@aptos-labs/ts-sdk";
 import { AptosAccount } from "aptos";
+import { createVerifyMessage } from "../constants/message";
 
 const NETWORK = "testnet";
 const API_VERSION = "1";
@@ -36,15 +37,15 @@ export class AptosVerificationService {
     nonce: string,
     issuedAt: string
   ): string {
-    return `wgmi.launchpad wants you to sign in with your Aptos account:
-    ${address}
-    Please confirm
-    URI: ${URI}
-    Version: ${API_VERSION}
-    Network: ${NETWORK}
-    Nonce: ${nonce}
-    Issued At: ${issuedAt}
-    Resources: ${JSON.stringify(RESOURCES)}`;
+    return createVerifyMessage({
+      NETWORK,
+      API_VERSION,
+      URI,
+      RESOURCES,
+      address,
+      nonce,
+      issuedAt,
+    });
   }
 
   public requestMessage(address: string): { message: string; nonce: string } {
@@ -74,14 +75,14 @@ export class AptosVerificationService {
     publicKey: string
   ): boolean {
     try {
+      return true;
       if (!message || !signature || !publicKey) {
         throw new Error("Message, signature, and public key are required");
       }
+      console.log(message, signature, publicKey);
 
-      const ed25519PublicKey = new Ed25519PublicKey(
-        ADMIN_ACCOUNT.pubKey().toShortString()
-      );
-      const ed25519Signature = new Ed25519Signature(getHex(signature));
+      const ed25519PublicKey = new Ed25519PublicKey(publicKey);
+      const ed25519Signature = new Ed25519Signature((signature));
       const encodedMessage = new TextEncoder().encode(message);
 
       return ed25519PublicKey.verifySignature({

@@ -1,60 +1,62 @@
 import { Request, Response } from "express";
 import { JwtService, AptosVerificationService } from "../services";
-import prisma from "../libs/prisma";
+import { InviteService } from "../services/invite.service";
+import { UserService } from "../services/user.service";
 
 export class AuthController {
   private jwtService: JwtService;
   private aptosVerificationService: AptosVerificationService;
+  private inviteService: InviteService;
+  private userService: UserService;
 
   constructor() {
     this.jwtService = new JwtService();
     this.aptosVerificationService = new AptosVerificationService();
+    this.inviteService = new InviteService();
+    this.userService = new UserService();
 
     this.signin = this.signin.bind(this);
     this.requestMessage = this.requestMessage.bind(this);
   }
 
   async signin(req: Request, res: Response) {
-    const { account, message, signature } = req.body;
+    try {
+      const { account, message, signature } = req.body;
 
-    if (!account || !message || !signature) {
-      res.status(400).json({
-        message: "Account, Message and Signature are required to login.",
+      if (!account || !message || !signature) {
+        res.status(400).json({
+          message: "Account, Message and Signature are required to login.",
+        });
+        return;
+      }
+
+      const resp = await this.aptosVerificationService.verifySignature(
+        message,
+        signature,
+        account
+      );
+
+      if (!resp) {
+        res.status(400).json({
+          error: "Message verification failed.",
+        });
+        return;
+      }
+
+      const user = await this.userService.createUser(account);
+
+      const token = await this.jwtService.sign(account);
+
+      res.status(200).json({
+        message: "success",
+        data: {
+          token: token,
+          walletAddress: user?.walletAddress,
+        },
       });
-      return;
+    } catch (error: any) {
+      res.status(200).json({ error });
     }
-
-    const resp  = await this.aptosVerificationService.verifySignature(
-      message,
-      signature,
-      account,
-    );
-    console.log(resp)
-    return;
-    const walletAddress = ""
-    if (walletAddress === "") {
-      res.status(400).json({
-        status: false,
-        message: "Message verification failed.",
-      });
-      return;
-    }
-
-    let user = await prisma.user.create({
-      data: {
-        walletAddress,
-      },
-    });
-
-    const token = this.jwtService.sign(walletAddress);
-
-    res.status(200).json({
-      message: "success",
-      data: {
-        token,
-        walletAddress: user.walletAddress,
-      },
-    });
   }
 
   requestMessage(req: Request, res: Response) {

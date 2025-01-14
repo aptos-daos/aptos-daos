@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { type DaoData } from "@/validation/dao.validation";
-import instance from "@/request/api/api.instance";
+import type { DaoData, DaoDataWithInvite } from "@/validation/dao.validation";
 import { useToast } from "./use-toast";
+import DAOAPI from "@/request/dao/dao.api";
 
 const useDao = () => {
   const [daos, setDaos] = useState<DaoData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const api = new DAOAPI();
 
   useEffect(() => {
     setLoading(true);
@@ -26,22 +27,10 @@ const useDao = () => {
 
   const { toast } = useToast();
 
-  const responseParserData = <T>(
-    data: IResponse<T>,
-    onSuccessToast: boolean = false
-  ): T => {
-    if (onSuccessToast || !data.success)
-      toast({
-        title: data.message,
-        variant: data.success ? "default" : "destructive",
-      });
-    return data.data;
-  };
-
   const fetchAllDaoData = async (): Promise<DaoData[]> => {
     try {
-      const response = await instance.get<IResponse<DaoData[]>>("/dao");
-      return responseParserData(response.data);
+      const response = await api.getAllDAOs();
+      return response;
     } catch (error) {
       toast({
         title: "Failed to fetch dao data",
@@ -53,8 +42,8 @@ const useDao = () => {
 
   const fetchDao = async (id: string): Promise<DaoData | null> => {
     try {
-      const response = await instance.get<IResponse<DaoData>>(`/dao/${id}`);
-      return responseParserData<DaoData>(response.data);
+      const response = await api.getSingleDAO(id);
+      return response;
     } catch (error) {
       toast({
         title: "Failed to fetch dao entry",
@@ -64,13 +53,12 @@ const useDao = () => {
     }
   };
 
-  const addDao = async (data: DaoData): Promise<DaoData | null> => {
+  const createDao = async (
+    data: DaoDataWithInvite
+  ): Promise<DaoData | null> => {
     try {
-      const response = await instance.post<IResponse<DaoData>>(
-        "/dao",
-        data
-      );
-      return responseParserData(response.data, true);
+      const response = await api.createDAO(data);
+      return response;
     } catch (error) {
       toast({
         title: "Failed to add dao",
@@ -82,8 +70,8 @@ const useDao = () => {
 
   const deleteDao = async (id: string) => {
     try {
-      const response = await instance.delete(`/dao/${id}`);
-      return responseParserData(response.data, true);
+      const response = await api.removeDAO(id);
+      return response;
     } catch (error) {
       toast({
         title: "Failed to delete dao",
@@ -92,13 +80,10 @@ const useDao = () => {
     }
   };
 
-  const updateDaoValue = async (id: string, value: number) => {
+  const updateDaoValue = async (id: string, value: Partial<DaoData>) => {
     try {
-      const response = await instance.patch<IResponse<DaoData>>(
-        `/dao/${id}`,
-        { value }
-      );
-      return responseParserData<any>(response.data, true);
+      const response = await api.updateDAO(id, value);;
+      return response;
     } catch (error) {
       toast({
         title: "Failed to update dao value",
@@ -113,7 +98,7 @@ const useDao = () => {
     error,
     fetchAllDaoData,
     fetchDao,
-    addDao,
+    createDao,
     deleteDao,
     updateDaoValue,
   };
